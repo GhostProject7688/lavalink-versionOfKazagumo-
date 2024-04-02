@@ -138,7 +138,7 @@ class lavalinkManager {
 
           const [voiceID, selfDeaf = "true", selfMute = "false"] = data.inside.splits;
 
-          const channel = d.util.getChannel(d, voiceID);
+          const channel = await d.util.getChannel(d, voiceID);
 
           const oldPlayer = client.lavalinkClient.getPlayer(channel.guildId);
 
