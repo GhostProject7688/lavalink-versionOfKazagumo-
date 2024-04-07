@@ -9,4 +9,18 @@ const sources = [
   { name: "local", source: "local" }
 ];
 
-module.exports = { sources };
+const events = [
+  "playerCreate",
+  "playerDestroy",
+  "playerDisconnect",
+  "playerMove",
+  "playerSocketClosed",
+  "trackStart",
+  "trackStuck",
+  "trackError",
+  "trackEnd",
+  "queueEnd",
+  "playerUpdate"
+]
+
+module.exports = { sources, events };
