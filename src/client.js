@@ -1,10 +1,10 @@
-const { LavalinkManager } = require("lavalink-client");
+const { Kazagumo } = require("kazagump");
 const AoiError = require("aoi.js/src/classes/AoiError");
 const { version } = require("../package.json");
 const { readdirSync } = require("fs");
 const { join } = require("path");
 const autoPlay = require("./autoPlay.js");
-class lavalinkManager {
+class Kazagumo {
   constructor(client, options) {
     this.client = client;
     this.options = options;
@@ -30,34 +30,48 @@ class lavalinkManager {
         }, 1e3);
       });
     });
-
-    const manager = new LavalinkManager({
-      nodes: [
-        {
-          host: this.options.host,
+    const Nodes = [{
+    host: this.options.host,
           port: this.options.port,
-          authorization: this.options.password || "",
+          auth: this.options.password || "",
           secure: this.options.secure || false
-        }
-      ],
-      playerOptions: {
-        onEmptyQueue: {
-          destroyAfterMs: this.options?.destroyAfterMs || undefined,
-          autoPlayFunction: autoPlay
-        }
-      },
-      client: {
-        id: this.client.user.id,
-        username: this.client.user.username
-      },
-      sendToShard: (guildId, payload) => this.client.guilds.cache.get(guildId)?.shard?.send(payload)
-    });
+    }]
+const manager = new Kazagumo(
+      {
+        defaultSearchEngine: this.options.defaultSearchEngine,
+        // MAKE SURE YOU HAVE THIS
+        send: (guildId, payload) => {
+          const guild = this.guilds.cache.get(guildId);
+          if (guild) guild.shard.send(payload);
+        },
+        plugins: this.config.lavalink.SPOTIFY.enable
+          ? [
+            /*  new Spotify({
+                clientId: this.config.lavalink.SPOTIFY.id,
+                clientSecret: this.config.lavalink.SPOTIFY.secret,
+                playlistPageLimit: 1, // optional ( 100 tracks per page )
+                albumPageLimit: 1, // optional ( 50 tracks per page )
+                searchLimit: 10, // optional ( track search limit. Max 50 )
+                searchMarket: "US", // optional || default: US ( Enter the country you live in. [ Can only be of 2 letters. For eg: US, IN, EN ] )//
+              }),*/
+              new Deezer(),
+              new Nico({ searchLimit: 10 }),
+              new Plugins.PlayerMoved(manager),
+            ]
+          : [
+              new Deezer(),
+              new Nico({ searchLimit: 10 }),
+              new Plugins.PlayerMoved(manager),
+            ],
+      }, new Connectors.DiscordJS(manager), Nodes);
+      
+    
 
-    this.client.lavalinkClient = manager;
-    this.client.lavalinkClient.events = this.events;
-    this.client.lavalinkClient.cmds = this.cmds;
+    this.client.Kazagumo = Kazagumo;
+    this.client.Kazagumo.events = this.events;
+    this.client.Kazagumo.cmds = this.cmds;
 
-    this.client.on("raw", (d) => manager.sendRawData(d));
+  //  this.client.on("raw", (d) => manager.sendRawData(d));
 
     //config
     manager.config = {};
@@ -83,12 +97,12 @@ class lavalinkManager {
         );
       });
 
-      manager.nodeManager.on("error", (node, error, payload) => {
+      manager.shoukaku.on("error", (node, error, payload) => {
         console.error(getTimestamp(), `The Lavalink Node ${node.id} errored:\n\r`, error);
         console.error(getTimestamp(), `Error-Payload:`, payload);
       });
 
-      manager.nodeManager.on("destroy", (node) => {
+      manager.shoukaku.on("destroy", (node) => {
         console.error(getTimestamp(), `The Lavalink Node ${node.id} was destroyed.`);
       });
 
@@ -100,9 +114,7 @@ class lavalinkManager {
     if (manager.config.debug == true) {
       console.log(getTimestamp(), "The debug option is set to true.");
 
-      manager.nodeManager.on("create", (node) => {
-        console.log(getTimestamp(), `The Lavalink Node ${node.id} was created.`);
-      });
+      
 
       manager.nodeManager.on("connect", (node) => {
         console.log(getTimestamp(), `Lavalink Version: ${node.version}`);
@@ -156,7 +168,7 @@ class lavalinkManager {
   }
 }
 
-module.exports = { lavalinkManager };
+module.exports = { Kazagumo };
 
 function getTimestamp(type = "default") {
   const now = new Date();
