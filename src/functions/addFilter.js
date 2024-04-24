@@ -1,4 +1,3 @@
-const { EQList } = require("lavalink-client");
 
 module.exports = {
   name: "$addFilter",
@@ -14,22 +13,21 @@ module.exports = {
 
     const [...filters] = data.inside.splits;
 
-    const player = d.client.lavalinkClient.getPlayer(d.guild?.id || d.channel?.guildId);
-
+    const player = kazagumo.player.get("guild_id")
+    
     if (!player) return d.aoiError.fnError(d, "custom", {}, "No player found.");
 
-    const EList = Object.keys(EQList);
 
     for (const filter of filters) {
-      if (EList.includes(filter)) {
-        await player.filterManager.setEQ(EQList[filter]);
+      if (filter.includes(filter)) {
+        await player.filter(filter[filter]);
       } else {
         d.aoiError.fnError(d, "custom", {}, `Invalid filter '${filter}', use the following: ${EList.join(", ")} `);
         break;
       }
 
       if (filter.toLowerCase() === "clear") {
-        await player.filterManager.clearEQ();
+        await player.filter("clear")
       }
     }
 
