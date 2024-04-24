@@ -3,7 +3,7 @@
 module.exports = {
   name: "$playTrack",
   info: {
-    usage: "$playTrack[string | sources (../constants)]", 
+    usage: "$playTrack[value;Play a song ]", 
     description: "pauses the current track in the player",
     version: "0.1.0"
   },
@@ -12,7 +12,7 @@ module.exports = {
     const data = d.util.aoiFunc(d);
     if (data.err) return d.error(data.err);
 
-    const [] = data.inside.splits;
+    const [value] = data.inside.splits;
 
     const player = manager.players.get(d.guild!.id);
     if (!player) return d.aoiError.fnError(d, "custom", { inside: data.inside }, "No player found.");
