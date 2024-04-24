@@ -27,6 +27,7 @@ module.exports = {
       }
 
       if (filter.toLowerCase() === "clear") {
+        
         await player.filter("clear")
       }
     }
